@@ -1,5 +1,18 @@
 # Práctica 4
 
+## Datos Generales
+
+- **Unidad de Aprendizaje:** Teoría de la Computación
+- **Carrera:** Ingeniería en Sistemas Computacionales
+- **Profesor:** Gabriel Hurtado Aviles
+- **Fecha de entrega:** 6 de noviembre de 2026
+
+## Nombres de los integrantes del equipo
+
+- Iker Gael Cruz Vargas
+- Maria Fernanda Santos Fuentes
+- Perla Santos Martinez
+
 ## Conversión de AFD a expresión regular
 
 La aplicación importa un autómata `.jff`, comprueba que sea determinista y obtiene una expresión regular mediante eliminación de estados. La matriz muestra el autómata generalizado inicial y el resultado después de eliminar cada estado; se puede avanzar y retroceder entre pasos.
