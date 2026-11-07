@@ -13,7 +13,7 @@
 - Maria Fernanda Santos Fuentes
 - Perla Santos Martinez
 - 
-## [Ejercicio 1: Investigación sobre expresiones regulares](Ejercicio1.md)
+## [Ejercicio 1: Investigación sobre expresiones regulares](ejercicio1.md)
 
 
 ## Punto 2: De expresión regular a autómata
