@@ -2,7 +2,13 @@
 
 Expresión original: `(a+b)*b`
 
-Expresión obtenida del AFD mínimo: `a*b(b + aa*b)*`
+Ecuaciones desde el AFD mínimo (M0 inicial, M1 final):
+- `M0 = aM0 + bM1`
+- `M1 = aM0 + bM1 + λ`
+
+Por Arden, `M1 = b*( aM0 + λ ) = b*aM0 + b*`.
+Sustituyendo en M0: `M0 = (a + bb*a)M0 + bb*`.
+La expresión obtenida es `(a+bb*a)*bb*`.
 
 Estados del AFD por subconjuntos: 3.
 Estados del AFD mínimo: 2.

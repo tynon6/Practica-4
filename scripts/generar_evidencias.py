@@ -23,7 +23,6 @@ sys.path.insert(0, str(RAIZ / "src"))
 import expresiones as er  # noqa: E402
 import formatos as fm  # noqa: E402
 import conversiones as cv  # noqa: E402
-import eliminacion_estados as elim  # noqa: E402
 import validadores as val  # noqa: E402
 from automata import Automata  # noqa: E402
 from thompson import pipeline  # noqa: E402
@@ -110,13 +109,29 @@ def arden_278() -> None:
     datos = json.loads((RAIZ / "casos/practica4/ejercicios_er.json").read_text(encoding="utf-8"))
     caso = next(c for c in datos["casos"] if c["lista"] == 4 and c["ejercicio"] == 278)
     p = pipeline(caso["expresion"], datos.get("clases") or None, set(caso["alfabeto"]))
-    resultado = elim.a_expresion(p.minimo)
+    a, b = sorted(p.minimo.alfabeto)
+    q0 = p.minimo.inicial
+    q1 = next(iter(p.minimo.finales))
+    estructura_esperada = (
+        p.minimo.destinos(q0, a) == {q0}
+        and p.minimo.destinos(q0, b) == {q1}
+        and p.minimo.destinos(q1, a) == {q0}
+        and p.minimo.destinos(q1, b) == {q1}
+    )
+    if len(p.minimo.estados) != 2 or not estructura_esperada:
+        raise ValueError("El AFD mínimo del ejercicio 278 no tiene la estructura prevista para el desarrollo de Arden.")
+    resultado = f"({a}+{b}{b}*{a})*{b}{b}*"
     equivalente = pipeline(resultado, datos.get("clases") or None, set(caso["alfabeto"]))
     iguales, detalle, contraejemplo = cv.equivalentes(p.minimo, equivalente.minimo)
     lineas = [
         "# Lista 4, ejercicio 278(d): resultado con el Lema de Arden", "",
         f"Expresión original: `{caso['expresion']}`", "",
-        f"Expresión obtenida del AFD mínimo: `{resultado}`", "",
+        "Ecuaciones desde el AFD mínimo (M0 inicial, M1 final):",
+        f"- `M0 = {a}M0 + {b}M1`",
+        f"- `M1 = {a}M0 + {b}M1 + λ`", "",
+        f"Por Arden, `M1 = {b}*( {a}M0 + λ ) = {b}*{a}M0 + {b}*`.",
+        f"Sustituyendo en M0: `M0 = ({a} + {b}{b}*{a})M0 + {b}{b}*`.",
+        f"La expresión obtenida es `{resultado}`.", "",
         f"Estados del AFD por subconjuntos: {len(p.afd.estados)}.",
         f"Estados del AFD mínimo: {len(p.minimo.estados)}.",
         f"AFD mínimo de ambas expresiones: {'equivalentes' if iguales else 'no equivalentes'}.",
