@@ -12,6 +12,9 @@
 - Iker Gael Cruz Vargas
 - Maria Fernanda Santos Fuentes
 - Perla Santos Martinez
+- 
+## [Ejercicio 1: Investigación sobre expresiones regulares](Ejercicio1.md)
+
 
 ## Punto 2: De expresión regular a autómata
 
