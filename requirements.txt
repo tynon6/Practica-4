@@ -1,0 +1,6 @@
+flet[web]==0.86.5
+# flet-web 0.86.5 llama a FastAPI con un parametro (openapi_prefix) que FastAPI
+# elimino a partir de la 0.143; sin esta linea pip instala la mas reciente y el
+# servidor web no arranca. Ver docs/practica4/guia o el README.
+fastapi==0.140.0
+pytest==8.3.4
