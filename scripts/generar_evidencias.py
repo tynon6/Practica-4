@@ -1,6 +1,7 @@
 """Genera los .jff y las tablas de evidencia de los Ejercicios 2 y 4 de la Practica 4.
 
 Uso (desde la raiz del repositorio):
+    python scripts/generar_evidencias.py --ejercicio-2
     python scripts/generar_evidencias.py
 
 Produce:
@@ -12,6 +13,7 @@ Produce:
 """
 
 import json
+import argparse
 import sys
 from pathlib import Path
 
@@ -20,6 +22,8 @@ sys.path.insert(0, str(RAIZ / "src"))
 
 import expresiones as er  # noqa: E402
 import formatos as fm  # noqa: E402
+import conversiones as cv  # noqa: E402
+import eliminacion_estados as elim  # noqa: E402
 import validadores as val  # noqa: E402
 from automata import Automata  # noqa: E402
 from thompson import pipeline  # noqa: E402
@@ -37,7 +41,8 @@ def er_a_automata() -> str:
               "|---|---|---|---|---|---|"]
     pendientes = []
     for c in datos["casos"]:
-        nombre = f"L{c['lista']}-{c['ejercicio']}"
+        inciso = f"-{c['inciso']}" if c.get("inciso") else ""
+        nombre = f"L{c['lista']}-{c['ejercicio']}{inciso}"
         if not c.get("expresion"):
             pendientes.append(nombre)
             continue
@@ -69,6 +74,60 @@ def validadores() -> str:
     return "\n".join(lineas) + "\n"
 
 
+def validacion_273() -> None:
+    """Registra la comprobación por λ-clausuras de las cadenas del ejercicio 273."""
+    datos = json.loads((RAIZ / "casos/practica4/ejercicios_er.json").read_text(encoding="utf-8"))
+    expresiones = {(c["lista"], c["ejercicio"], c.get("inciso")): c
+                   for c in datos["casos"]}
+    lineas = ["# Lista 4, ejercicio 273: comprobación por λ-clausuras", ""]
+    for validacion in datos.get("validaciones", []):
+        caso = expresiones[(validacion["lista"], 272, validacion["inciso"])]
+        p = pipeline(caso["expresion"], datos.get("clases") or None, set(caso["alfabeto"]))
+        lineas += [f"## Ejercicio 272({validacion['inciso']}): `{caso['expresion']}`", "",
+                   "| Cadena | λ-clausura y recorrido | Aceptación | Esperada | Coincide |",
+                   "|---|---|---|---|---|"]
+        for prueba in validacion["cadenas"]:
+            aceptada, pasos = cv.simular_afn(p.thompson.afn_lambda, prueba["cadena"])
+            recorrido = ["λ-cl(q0)=" + _conjunto(pasos[0]["despues"])]
+            recorrido += [f"{paso['simbolo']}→{_conjunto(paso['mover'])}→λ-cl {_conjunto(paso['despues'])}"
+                          for paso in pasos[1:]]
+            lineas.append(
+                f"| `{prueba['cadena']}` | {'; '.join(recorrido)} | "
+                f"{'Sí' if aceptada else 'No'} | {'Sí' if prueba['esperada'] else 'No'} | "
+                f"{'Sí' if aceptada == prueba['esperada'] else 'No'} |"
+            )
+        lineas.append("")
+    EVIDENCIAS.mkdir(parents=True, exist_ok=True)
+    (EVIDENCIAS / "validacion-273.md").write_text("\n".join(lineas), encoding="utf-8")
+
+
+def _conjunto(estados) -> str:
+    return "{" + ", ".join(sorted(estados)) + "}" if estados else "∅"
+
+
+def arden_278() -> None:
+    """Aplica Arden al AFD mínimo del ejercicio 278 y compara lenguajes."""
+    datos = json.loads((RAIZ / "casos/practica4/ejercicios_er.json").read_text(encoding="utf-8"))
+    caso = next(c for c in datos["casos"] if c["lista"] == 4 and c["ejercicio"] == 278)
+    p = pipeline(caso["expresion"], datos.get("clases") or None, set(caso["alfabeto"]))
+    resultado = elim.a_expresion(p.minimo)
+    equivalente = pipeline(resultado, datos.get("clases") or None, set(caso["alfabeto"]))
+    iguales, detalle, contraejemplo = cv.equivalentes(p.minimo, equivalente.minimo)
+    lineas = [
+        "# Lista 4, ejercicio 278(d): resultado con el Lema de Arden", "",
+        f"Expresión original: `{caso['expresion']}`", "",
+        f"Expresión obtenida del AFD mínimo: `{resultado}`", "",
+        f"Estados del AFD por subconjuntos: {len(p.afd.estados)}.",
+        f"Estados del AFD mínimo: {len(p.minimo.estados)}.",
+        f"AFD mínimo de ambas expresiones: {'equivalentes' if iguales else 'no equivalentes'}.",
+        f"{detalle}",
+    ]
+    if contraejemplo is not None:
+        lineas.append(f"Cadena que distingue: `{contraejemplo or 'λ'}`.")
+    EVIDENCIAS.mkdir(parents=True, exist_ok=True)
+    (EVIDENCIAS / "resultado-278.md").write_text("\n".join(lineas) + "\n", encoding="utf-8")
+
+
 def ejemplos() -> None:
     carpeta = DESTINO / "ejemplos"
     anexo = Automata(["q0", "q1"], ["a", "b"], "q0", {"q1"},
@@ -86,8 +145,15 @@ def ejemplos() -> None:
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Genera los autómatas y resúmenes de la Práctica 4.")
+    parser.add_argument("--ejercicio-2", action="store_true",
+                        help="genera únicamente los resultados del ejercicio 2")
+    argumentos = parser.parse_args()
     EVIDENCIAS.mkdir(parents=True, exist_ok=True)
     (EVIDENCIAS / "resumen-er-a-automata.md").write_text(er_a_automata(), encoding="utf-8")
-    (EVIDENCIAS / "resumen-validadores.md").write_text(validadores(), encoding="utf-8")
-    ejemplos()
+    validacion_273()
+    arden_278()
+    if not argumentos.ejercicio_2:
+        (EVIDENCIAS / "resumen-validadores.md").write_text(validadores(), encoding="utf-8")
+        ejemplos()
     print("Listo: revise automatas/practica4/ y evidencias/practica4/")

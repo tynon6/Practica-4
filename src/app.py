@@ -566,9 +566,15 @@ class App:
         veredicto = ft.Text(size=16, weight=ft.FontWeight.BOLD)
         ocultar_trampa = ft.Checkbox(label="Ocultar estado trampa en el dibujo", value=True)
         estado: dict = {"p": None}
-        ejemplos = ft.Dropdown(label="Casos de prueba (casos/practica4)", width=320,
-                               options=[ft.DropdownOption(str(i), f"L{c['lista']}-{c['ejercicio']}: {c['expresion']}")
+        def etiqueta_caso(c):
+            inciso = f"({c['inciso']})" if c.get("inciso") else ""
+            return f"L{c['lista']}-{c['ejercicio']}{inciso}: {c['expresion']}"
+
+        ejemplos = ft.Dropdown(label="Casos de prueba", width=350,
+                               options=[ft.DropdownOption(str(i), etiqueta_caso(c))
                                         for i, c in enumerate(casos)])
+        resultados_lambda = ft.Container()
+        boton_lambda = ft.OutlinedButton("Verificar Ejercicio 273 con λ-clausuras", disabled=True)
 
         def insertar(simbolo):
             def manejar(_):
@@ -580,6 +586,8 @@ class App:
             c = casos[int(ejemplos.value)]
             expresion.value = c["expresion"]
             alfabeto.value = c.get("alfabeto", "")
+            boton_lambda.disabled = not bool(c.get("validacion_273"))
+            resultados_lambda.content = None
             construir()
 
         def construir(_=None):
@@ -664,13 +672,66 @@ class App:
                                            resaltados=ruta, ancho=700, alto=440)
             self.page.update()
 
+        def validar_ejercicio_273(_):
+            if ejemplos.value is None:
+                return
+            caso = casos[int(ejemplos.value)]
+            inciso = caso.get("validacion_273")
+            p = estado["p"]
+            if not inciso or p is None:
+                return
+            if (expresion.value or "").strip() != caso["expresion"]:
+                resultados_lambda.content = ft.Text(
+                    "Seleccione de nuevo el caso original para usar esta comprobación.",
+                    color=ft.Colors.ERROR)
+                self.page.update()
+                return
+            validacion = next(
+                v for v in datos.get("validaciones", [])
+                if v["ejercicio"] == 273 and v["inciso"] == inciso
+            )
+            filas, trazas = [], []
+            for prueba in validacion["cadenas"]:
+                cadena_prueba = prueba["cadena"]
+                aceptada, pasos = cv.simular_afn(p.thompson.afn_lambda, cadena_prueba)
+                coincide = aceptada == prueba["esperada"]
+                filas.append([cadena_prueba, "sí" if aceptada else "no",
+                              "sí" if prueba["esperada"] else "no",
+                              "coincide" if coincide else "revisar"])
+                trazas.append(f"Cadena {mostrar(cadena_prueba)}:")
+                for i, paso in enumerate(pasos):
+                    if i == 0:
+                        trazas.append(f"  λ-cl(inicial) = {conjunto(paso['despues'])}")
+                    else:
+                        trazas.append(
+                            f"  leer {mostrar(paso['simbolo'])}: mover {conjunto(paso['mover'])}; "
+                            f"λ-cl = {conjunto(paso['despues'])}"
+                        )
+                trazas.append(f"  Resultado: {'aceptada' if aceptada else 'rechazada'}\n")
+            total = len(filas)
+            correctas = sum(f[3] == "coincide" for f in filas)
+            resultados_lambda.content = ft.Column([
+                ft.Text(f"Lista 4, ejercicio 273, inciso {inciso}: {correctas}/{total} resultados coinciden."),
+                tabla(["Cadena", "AFN-λ", "Resultado esperado", "Comprobación"], filas),
+                ft.Text("\n".join(trazas), font_family=MONO, selectable=True),
+            ], spacing=6)
+            veredicto.value = f"Ejercicio 273 ({inciso}): {correctas}/{total} coinciden por λ-clausuras."
+            veredicto.color = ft.Colors.GREEN if correctas == total else ft.Colors.ERROR
+            etapa.value = "thompson"
+            a = p.thompson.afn_lambda
+            paso_info.value = "Procesamiento de las cadenas del ejercicio 273 mediante λ-clausuras."
+            dibujo_c.content = dibujar(a, ancho=700, alto=440)
+            tabla_c.content = tabla_automata(a)
+            self.page.update()
+
         def exportar(_):
             p = estado["p"]
             if p is None:
                 return
-            base = re.sub(r"[^A-Za-z0-9_-]+", "_", (ejemplos.value and
-                                                     f"L{casos[int(ejemplos.value)]['lista']}-{casos[int(ejemplos.value)]['ejercicio']}")
-                          or "expresion").strip("_")
+            caso = casos[int(ejemplos.value)] if ejemplos.value is not None else None
+            nombre_caso = (f"L{caso['lista']}-{caso['ejercicio']}" +
+                           (f"-{caso['inciso']}" if caso.get("inciso") else "")) if caso else "expresion"
+            base = re.sub(r"[^A-Za-z0-9_-]+", "_", nombre_caso).strip("_")
             carpeta = SALIDAS / "er-a-automata" / base
             for nombre, a in [("1-afn-lambda", p.thompson.afn_lambda), ("2-afn", p.afn),
                               ("3-afd", p.afd), ("4-afd-minimo", p.minimo)]:
@@ -692,6 +753,7 @@ class App:
         deslizador.on_change = mostrar_etapa
         ocultar_trampa.on_change = mostrar_etapa
         ejemplos.on_select = elegir_ejemplo
+        boton_lambda.on_click = validar_ejercicio_273
         expresion.on_submit = construir
         cadena.on_submit = validar
 
@@ -713,7 +775,8 @@ class App:
             ft.Row([dibujo_c, ft.Column([ft.Text("Detalle", weight=ft.FontWeight.BOLD), detalle], expand=True)],
                    vertical_alignment=ft.CrossAxisAlignment.START, wrap=True),
             tabla_c,
-            ft.Row([cadena, boton("Validar", validar, principal=True), veredicto], wrap=True),
+            ft.Row([cadena, boton("Validar", validar, principal=True), boton_lambda, veredicto], wrap=True),
+            resultados_lambda,
         ], scroll=ft.ScrollMode.AUTO, spacing=10, expand=True)
 
     # ============================================ 4. AUTOMATA -> ER (P4, Ejercicio 3)

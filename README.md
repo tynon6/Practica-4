@@ -13,29 +13,55 @@
 - Maria Fernanda Santos Fuentes
 - Perla Santos Martinez
 
-## Conversión de AFD a expresión regular
+## Punto 2: De expresión regular a autómata
 
-La aplicación importa un autómata `.jff`, comprueba que sea determinista y obtiene una expresión regular mediante eliminación de estados. La matriz muestra el autómata generalizado inicial y el resultado después de eliminar cada estado; se puede avanzar y retroceder entre pasos.
+La aplicación analiza expresiones de la notación del curso, construye el AFN-λ mediante Thompson paso a paso y continúa con los algoritmos de la Práctica 3 para obtener el AFN, el AFD y el AFD mínimo. Permite revisar los autómatas y sus transiciones, validar cadenas y exportar cada etapa a `.jff`.
 
-## Ejecución
+### Índice de resultados
 
-Requiere Python 3 y Tkinter, incluido normalmente en la instalación de Python.
+- [Resumen de los casos de conversión](evidencias/practica4/resumen-er-a-automata.md)
+- [Cadenas del ejercicio 273 procesadas por λ-clausuras](evidencias/practica4/validacion-273.md)
+- [Resultado de Arden para el ejercicio 278](evidencias/practica4/resultado-278.md)
+
+### Notación aceptada
+
+- `+`: unión.
+- Yuxtaposición: concatenación, por ejemplo `ab`.
+- `*`: cerradura de Kleene.
+- `λ`: cadena vacía; `∅`: lenguaje vacío.
+- Paréntesis para agrupar.
+- `[D]` para una clase declarada, por ejemplo `D = 0 + 1 + ... + 9`.
+- `\c` para usar literalmente un carácter especial.
+
+La precedencia es `*`, concatenación y `+`, de mayor a menor. Los espacios se ignoran salvo que estén escapados.
+
+### Ejecución
+
+Requiere Python 3.11 o posterior. Instala las dependencias y abre la aplicación:
 
 ```bash
+python -m pip install -r requirements.txt
 python src/app.py
 ```
 
-En la lista de casos se pueden abrir directamente los ejercicios incluidos. También se pueden importar otros archivos `.jff`.
+En la sección **De expresión regular a autómata**, escribe una expresión o selecciona un caso de prueba. Pulsa **Construir** para ver el AFN-λ y usar el control de pasos; los menús permiten ver el AFN, el AFD y el AFD mínimo. Escribe una cadena para validarla. El botón de exportación guarda los cuatro autómatas `.jff` en `salidas/`.
 
-## Casos incluidos
+Para los ejercicios 272(b) y 272(c), selecciona el caso y usa **Verificar Ejercicio 273 con λ-clausuras** para procesar las cadenas indicadas en la Lista 4. Los pasos y resultados se muestran en pantalla.
 
-- Lista 3: ejercicios 254, 255, 256, 257 y 258.
-- Lista 4: ejercicios 276 y 277.
-- Práctica 3, Ejercicio 1: AFD de los ejercicios 151, 152, 153, 154 y 155.
+### Casos incluidos
 
-Los cinco AFD de la Práctica 3 están en `automatas/practica3/ejercicio1/`. Los casos de las listas están organizados en `automatas/practica4/lista3/` y `automatas/practica4/lista4/`.
+- Lista 3: ejercicios 241–253.
+- Lista 4: ejercicios 272(a)–272(e), las cadenas de comprobación del ejercicio 273 y el ejercicio 278.
+- Práctica 3: los cinco AFD del Ejercicio 1, usados en la sección de conversión de AFD a expresión regular.
 
-## Archivos principales
+Los datos de las expresiones están en `casos/practica4/ejercicios_er.json`. Los autómatas exportados y los resúmenes de esta sección se guardan en `automatas/practica4/er-a-automata/` y `evidencias/practica4/`.
 
-- `src/app.py`: interfaz para importar el autómata y recorrer los pasos.
-- `src/regex_por_estados.py`: lectura de `.jff`, comprobación de determinismo y cálculo de la expresión.
+### Archivos principales
+
+- `src/expresiones.py`: análisis de expresiones y detección de errores con posición.
+- `src/thompson.py`: construcción paso a paso y conversión hasta el AFD mínimo.
+- `src/conversiones.py`: cerraduras λ, conversión y simulación de autómatas.
+- `scripts/generar_evidencias.py`: generación de autómatas y resúmenes.
+- `evidencias/practica4/resumen-er-a-automata.md`: resultados de los casos de conversión.
+- `evidencias/practica4/validacion-273.md`: recorridos de las cadenas mediante λ-clausuras.
+- `evidencias/practica4/resultado-278.md`: resultado de Arden y comprobación del ejercicio 278.

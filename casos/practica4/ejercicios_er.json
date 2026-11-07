@@ -1,0 +1,48 @@
+{
+  "clases": {},
+  "casos": [
+    {"lista": 3, "ejercicio": 241, "expresion": "0+1", "alfabeto": "01"},
+    {"lista": 3, "ejercicio": 242, "expresion": "0*+1", "alfabeto": "01"},
+    {"lista": 3, "ejercicio": 243, "expresion": "(0+1)*", "alfabeto": "01"},
+    {"lista": 3, "ejercicio": 244, "expresion": "0(0+1)", "alfabeto": "01"},
+    {"lista": 3, "ejercicio": 245, "expresion": "0(0+1)*", "alfabeto": "01"},
+    {"lista": 3, "ejercicio": 246, "expresion": "0*(0+1)", "alfabeto": "01"},
+    {"lista": 3, "ejercicio": 247, "expresion": "(01)*+1*", "alfabeto": "01"},
+    {"lista": 3, "ejercicio": 248, "expresion": "(0*+1)0", "alfabeto": "01"},
+    {"lista": 3, "ejercicio": 249, "expresion": "(0*+1)0*", "alfabeto": "01"},
+    {"lista": 3, "ejercicio": 250, "expresion": "0*1*+1*0", "alfabeto": "01"},
+    {"lista": 3, "ejercicio": 251, "expresion": "(0+1*)0+1*1", "alfabeto": "01"},
+    {"lista": 3, "ejercicio": 252, "expresion": "(0+1)*(00+11)+(00+11)(0+1)*", "alfabeto": "01"},
+    {"lista": 3, "ejercicio": 253, "expresion": "(0+(11+00)*)(11+10+01)*(λ+110)", "alfabeto": "01"},
+    {"lista": 4, "ejercicio": 272, "inciso": "a", "expresion": "a+b*", "alfabeto": "ab"},
+    {"lista": 4, "ejercicio": 272, "inciso": "b", "expresion": "(ab)*a", "alfabeto": "ab", "validacion_273": "b"},
+    {"lista": 4, "ejercicio": 272, "inciso": "c", "expresion": "(a+b)*abb", "alfabeto": "ab", "validacion_273": "c"},
+    {"lista": 4, "ejercicio": 272, "inciso": "d", "expresion": "a(ba)*+b", "alfabeto": "ab"},
+    {"lista": 4, "ejercicio": 272, "inciso": "e", "expresion": "(a+λ)(b+∅)", "alfabeto": "ab"},
+    {"lista": 4, "ejercicio": 278, "expresion": "(a+b)*b", "alfabeto": "ab"}
+  ],
+  "validaciones": [
+    {
+      "lista": 4,
+      "ejercicio": 273,
+      "inciso": "b",
+      "cadenas": [
+        {"cadena": "aba", "esperada": true},
+        {"cadena": "ab", "esperada": false},
+        {"cadena": "babb", "esperada": false},
+        {"cadena": "abab", "esperada": false}
+      ]
+    },
+    {
+      "lista": 4,
+      "ejercicio": 273,
+      "inciso": "c",
+      "cadenas": [
+        {"cadena": "aba", "esperada": false},
+        {"cadena": "ab", "esperada": false},
+        {"cadena": "babb", "esperada": true},
+        {"cadena": "abab", "esperada": false}
+      ]
+    }
+  ]
+}
