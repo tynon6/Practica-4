@@ -92,7 +92,6 @@ def dibujar(automata: Automata | None = None, *, estados: list[str] | None = Non
     acento = ft.Colors.PRIMARY
     pos = _posiciones(estados, ancho, alto)
     formas: list = []
-    estilo = ft.TextStyle(size=11, color=linea)
     estilo_etq = ft.TextStyle(size=11, color=ft.Colors.TERTIARY, weight=ft.FontWeight.BOLD)
 
     for (o, d), texto in etiquetas.items():
